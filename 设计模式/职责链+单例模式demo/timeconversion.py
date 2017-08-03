@@ -144,27 +144,7 @@ class TimeConversion(object):
     __instance = None
 
     def __init__(self, *args, **kwargs):
-        # self.p1 = TodayBefore()
-        # p2 = YearsBefore()
-        # p3 = MonthsBefore()
-        # p4 = HoursBefore()
-        # p5 = MinutesBefore()
-        # p6 = Yesterday()
-        # p7 = YesterdayBefore()
-        # self.p1.set_successor(p2)
-        # p2.set_successor(p3)
-        # p3.set_successor(p4)
-        # p4.set_successor(p5)
-        # p5.set_successor(p6)
-        # p6.set_successor(p7)
-        # 将当前作用域中类名包含_g_name的类取出来添加进objects列表
-        objects = [eval(key)() for key in globals() if hasattr(eval(key), '_g_name')]
-        # 拿到第一个清洗class
-        self.time_cleaner = objects[0]
-        tmp_cleaner = None
-        for obj in objects[1:]:
-            self.time_cleaner.set_successor(obj) if not tmp_cleaner else tmp_cleaner.set_successor(obj)
-            tmp_cleaner = obj
+        pass
 
     def __new__(cls, *args, **kwargs):
         """判断需要实例化对象是否存在 存在则直接返回 不存在则新建
@@ -177,6 +157,14 @@ class TimeConversion(object):
                 Lock.acquire()
                 if not cls.__instance:
                     cls.__instance = super(TimeConversion, cls).__new__(cls, *args, **kwargs)
+                    objects = [eval(key)() for key in globals() if hasattr(eval(key), '_g_name')]
+                    # 拿到第一个清洗class
+                    time_cleaner = objects[0]
+                    tmp_cleaner = None
+                    for obj in objects[1:]:
+                        time_cleaner.set_successor(obj) if not tmp_cleaner else tmp_cleaner.set_successor(obj)
+                        tmp_cleaner = obj
+                    setattr(cls.__instance, 'time_cleaner', time_cleaner)
             finally:
                 Lock.release()
         return cls.__instance
@@ -185,6 +173,13 @@ class TimeConversion(object):
         return self.time_cleaner.handler(data)
 
 
+def time_conversion_main(data):
+    TC = TimeConversion()
+    return TC.handler(data)
+
 if __name__ == '__main__':
-    sl = TimeConversion()
-    print(sl.handler('13分钟前'))
+    s1 = TimeConversion()
+    s2 = TimeConversion()
+    print(s1)
+    print(s2)
+    print(s1.handler('13分钟前'))
